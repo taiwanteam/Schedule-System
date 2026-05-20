@@ -18,18 +18,17 @@
         
         <div class="header-right">
             <span id="userInfo" style="display: none;"></span>
-            <!-- <button id="loginBtn" class="btn btn-login" onclick="login()">🔑 Google 帳號登入</button> -->
             <button id="loginBtn">Google 登入</button>
-            <button id="cleanupBtn" class="btn btn-cleanup" onclick="autoCleanup()" style="display: none;">🧹 清理一個月前舊資料</button>
+            <button id="cleanupBtn" class="btn btn-cleanup" style="display: none;">🧹 清理一個月前舊資料</button>
         </div>
     </header>
 
     <nav class="leader-filter-container">
         <div class="filter-group">
-            <button class="filter-btn active" onclick="filterLeader('全部')">👥 全部行程</button>
-            <button class="filter-btn filter-director" onclick="filterLeader('局長')">👑 局長行程</button>
-            <button class="filter-btn filter-deputy" onclick="filterLeader('副局長')">💎 副局長行程</button>
-            <button class="filter-btn filter-secretary" onclick="filterLeader('秘書')">📝 秘書行程</button>
+            <button class="filter-btn active" data-leader="全部">👥 全部行程</button>
+            <button class="filter-btn filter-director" data-leader="局長">👑 局長行程</button>
+            <button class="filter-btn filter-deputy" data-leader="副局長">💎 副局長行程</button>
+            <button class="filter-btn filter-secretary" data-leader="秘書">📝 秘書行程</button>
         </div>
     </nav>
 
@@ -77,7 +76,7 @@
                     <input type="text" id="userName" placeholder="例如：O專員 (分機123)">
                 </div>
                 <div class="form-group flex-end">
-                    <button id="addBtn" class="btn btn-submit" onclick="addMeeting()">確認登錄行程</button>
+                    <button id="addBtn" class="btn btn-submit">確認登錄行程</button>
                 </div>
             </div>
         </div>
