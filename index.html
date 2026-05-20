@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行程管理系統</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="system-header">
+        <div class="header-left">
+            <h2 id="minguoDisplay">💡 讀取日曆中...</h2>
+        </div>
+        
+        <div class="header-right">
+            <span id="userInfo" style="display: none;"></span>
+            <button id="loginBtn" class="btn btn-login" onclick="login()">🔑 Google 帳號登入</button>
+            <button id="cleanupBtn" class="btn btn-cleanup" onclick="autoCleanup()" style="display: none;">🧹 清理一個月前舊資料</button>
+        </div>
+    </header>
+
+    <nav class="leader-filter-container">
+        <div class="filter-group">
+            <button class="filter-btn active" onclick="filterLeader('全部')">👥 全部行程</button>
+            <button class="filter-btn filter-director" onclick="filterLeader('局長')">👑 局長行程</button>
+            <button class="filter-btn filter-deputy" onclick="filterLeader('副局長')">💎 副局長行程</button>
+            <button class="filter-btn filter-secretary" onclick="filterLeader('秘書')">📝 秘書行程</button>
+        </div>
+    </nav>
+
+    <main class="calendar-wrapper">
+        <div id="calendar"></div>
+    </main>
+
+    <section class="form-wrapper">
+        <div class="form-card">
+            <h3>➕ 新增長官行程登記</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="leader">安排長官 <span class="required">*</span></label>
+                    <select id="leader">
+                        <option value="局長">局長</option>
+                        <option value="副局長">副局長</option>
+                        <option value="秘書">秘書</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="title">行程/會議名稱 <span class="required">*</span></label>
+                    <input type="text" id="title" placeholder="請輸入會議或公務行程名稱">
+                </div>
+
+                <div class="form-group">
+                    <label for="start">開始時間 <span class="required">*</span></label>
+                    <input type="datetime-local" id="start">
+                </div>
+                <div class="form-group">
+                    <label for="end">結束時間 <span class="required">*</span></label>
+                    <input type="datetime-local" id="end">
+                </div>
+
+                <div class="form-group">
+                    <label for="room">地點/會議室 <span class="required">*</span></label>
+                    <input type="text" id="room" placeholder="例如：局長室、第一會議室、縣府">
+                </div>
+                <div class="form-group">
+                    <label for="dept">承辦科室 <span class="required">*</span></label>
+                    <input type="text" id="dept" placeholder="例如：行政科、業務科">
+                </div>
+
+                <div class="form-group">
+                    <label for="userName">聯絡人姓名/分機 <span class="required">*</span></label>
+                    <input type="text" id="userName" placeholder="例如：O專員 (分機123)">
+                </div>
+                <div class="form-group flex-end">
+                    <button id="addBtn" class="btn btn-submit" onclick="addMeeting()">確認登錄行程</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
