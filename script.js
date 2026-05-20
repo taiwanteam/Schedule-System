@@ -92,42 +92,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5. 監聽 Firebase 登入狀態並控制元件顯示
     // =======================================================
     onAuthStateChanged(auth, (user) => {
-        const formSection = document.querySelector('.form-wrapper');
-        const calendarSection = document.querySelector('.calendar-wrapper');
-        const filterSection = document.querySelector('.leader-filter-container');
+    const formSection = document.querySelector('.form-wrapper');
+    const calendarSection = document.querySelector('.calendar-wrapper');
+    const filterSection = document.querySelector('.leader-filter-container');
 
-        if (user) {
-            currentUserEmail = user.email;
-            document.getElementById('userInfo').innerText = `👋 歡迎，${user.displayName || '管理員'}`;
-            document.getElementById('userInfo').style.display = 'inline';
-            document.getElementById('loginBtn').style.display = 'none';
-            document.getElementById('cleanupBtn').style.display = 'inline-block';
-            
-            // 🔓 登入後，秀出所有功能
-            calendarSection.style.display = 'block';
-            filterSection.style.display = 'block';
-            formSection.style.display = 'block'; 
-            
-            // 重新讀取雲端資料
-            loadData(); 
-            // 強制日曆重新計算寬度，防止排版失準
-            setTimeout(() => { calendar.updateSize(); }, 100);
-            
-        } else {
-            currentUserEmail = "";
-            document.getElementById('userInfo').style.display = 'none';
-            document.getElementById('loginBtn').style.display = 'inline-block';
-            document.getElementById('cleanupBtn').style.display = 'none';
-            
-            // 🔒 未登入時，隱藏所有主要介面
-            calendarSection.style.display = 'none';
-            filterSection.style.display = 'none';
-            formSection.style.display = 'none';
-            
-            // 清空舊日曆內容
-            if(calendar) calendar.removeAllEvents();
-        }
-    });
+    if (user) {
+        currentUserEmail = user.email;
+        document.getElementById('userInfo').innerText = `👋 歡迎，${user.displayName || '管理員'}`;
+        document.getElementById('userInfo').style.display = 'inline';
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('cleanupBtn').style.display = 'inline-block';
+        
+        // 🔓 登入後：移除隱藏類別，秀出所有功能（比傳統 style.display 更穩定）
+        calendarSection.classList.remove('auth-hidden');
+        filterSection.classList.remove('auth-hidden');
+        formSection.classList.remove('auth-hidden'); 
+        
+        loadData(); 
+        setTimeout(() => { calendar.updateSize(); }, 100);
+        
+    } else {
+        currentUserEmail = "";
+        document.getElementById('userInfo').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'inline-block';
+        document.getElementById('cleanupBtn').style.display = 'none';
+        
+        // 🔒 未登入時：加回隱藏類別
+        calendarSection.classList.add('auth-hidden');
+        filterSection.classList.add('auth-hidden');
+        formSection.classList.add('auth-hidden');
+        
+        if(calendar) calendar.removeAllEvents();
+    }
+});
 
     // =======================================================
     // 6. 現代事件監聽器綁定 (取代舊式 HTML onclick)
