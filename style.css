@@ -1,0 +1,182 @@
+/* =======================================================
+   🎨 全域基礎排版與字型設定
+   ======================================================= */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+/* 頂部標頭 */
+.system-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 15px;
+}
+.system-header h2 { margin: 0; font-size: 1.5rem; color: #2c3e50; }
+
+/* 通用按鈕樣式 */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+.btn-login { background-color: #4a5568; color: #fff; }
+.btn-login:hover { background-color: #2d3748; }
+.btn-cleanup { background-color: #e53e3e; color: #fff; margin-right: 10px; }
+.btn-cleanup:hover { background-color: #c53030; }
+.btn-submit { background-color: #2b6cb0; color: #fff; width: 100%; height: 40px; }
+.btn-submit:hover { background-color: #2c5282; }
+
+/* =======================================================
+   🎛️ 長官行程篩選標籤列 (Tabs)
+   ======================================================= */
+.leader-filter-container {
+    margin-bottom: 20px;
+}
+.filter-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.filter-btn {
+    padding: 10px 20px;
+    border: 2px solid #cbd5e0;
+    background: #fff;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #4a5568;
+    transition: all 0.2s;
+}
+/* 激活與滑過狀態的主管專屬顏色（與日曆卡片同步） */
+.filter-btn.active, .filter-btn:hover { color: #fff !important; }
+.filter-btn:nth-child(1).active, .filter-btn:nth-child(1):hover { background: #4a5568; border-color: #4a5568; } /* 全部 */
+.filter-btn.filter-director.active, .filter-btn.filter-director:hover { background: #e53e3e; border-color: #e53e3e; } /* 局長-紅 */
+.filter-btn.filter-deputy.active, .filter-btn.filter-deputy:hover { background: #3182ce; border-color: #3182ce; } /* 副局長-藍 */
+.filter-btn.filter-secretary.active, .filter-btn.filter-secretary:hover { background: #38a169; border-color: #38a169; } /* 秘書-綠 */
+
+/* =======================================================
+   📅 FullCalendar 標頭按鈕與外觀優化
+   ======================================================= */
+.calendar-wrapper {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 25px;
+}
+
+/* 修正左側按鈕組重疊與間距 */
+.fc .fc-toolbar-chunk:first-child {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding-left: 4px !important;
+}
+.fc .fc-button, .fc .fc-today-button, .fc .fc-button-group {
+    position: static !important;
+    margin: 0 !important;
+}
+.fc .fc-button {
+    padding: 0.4em 0.65em !important;
+    height: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    background-color: #4a5568 !important;
+    border: none !important;
+}
+.fc .fc-button:hover { background-color: #2d3748 !important; }
+.fc .fc-button-primary:disabled { background-color: #a0aec0 !important; opacity: 0.6; }
+
+/* =======================================================
+   🛡️ 核心防震：鎖死「月/週/日」日曆卡片排版，絕不跑位裁切
+   ======================================================= */
+/* 1. 月檢視：整齊的大卡片排版 */
+.fc-daygrid-block-event {
+    padding: 4px 6px !important;
+    font-size: 0.9rem !important;
+    border-radius: 4px !important;
+    border: none !important;
+    margin-top: 2px !important;
+}
+
+/* 2. 週/日檢視：24小時縱向時間軸防擠壓變形 */
+.fc-timegrid-event {
+    height: auto !important;           /* 允許卡片隨字數向下長高 */
+    min-height: 50px !important;       /* 確保最低舒適點擊高度 */
+    border: none !important;
+    border-left: 4px solid rgba(0,0,0,0.3) !important; /* 加強左側識別條 */
+    border-radius: 4px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+}
+.fc-timegrid-event .fc-event-main {
+    padding: 6px 8px !important;
+    white-space: normal !important;    /* 解鎖文字：強迫自動換行 */
+    word-break: break-all !important;   /* 防止連續英數字撐破欄位 */
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+}
+
+/* 3. 時間軸左側「24小時制」寬度微調，讓 13:00 顯示得更舒適 */
+.fc .fc-timegrid-slot-label {
+    font-weight: bold;
+    color: #4a5568;
+    padding-right: 8px !important;
+}
+
+/* =======================================================
+   ➕ 填報表單排版 (Form Layout)
+   ======================================================= */
+.form-wrapper {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.form-card h3 { margin-top: 0; margin-bottom: 20px; color: #2c3e50; border-left: 4px solid #2b6cb0; padding-left: 10px; }
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px 20px;
+}
+.form-group { display: flex; flex-direction: column; }
+.form-group label { font-weight: bold; margin-bottom: 6px; font-size: 0.9rem; color: #4a5568; }
+.form-group label .required { color: #e53e3e; }
+.form-group input, .form-group select {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    background-color: #fff;
+}
+.form-group input:focus, .form-group select:focus { border-color: #3182ce; box-shadow: 0 0 0 3px rgba(66,153,225,0.15); }
+.form-group.flex-end { justify-content: flex-end; }
+
+/* 列印最佳化：開會列印時，隱藏按鈕與表單，只留乾淨日曆 */
+@media print {
+    .system-header, .leader-filter-container, .form-wrapper, .fc-header-toolbar { display: none !important; }
+    body { padding: 0; background: #fff; }
+    .calendar-wrapper { box-shadow: none; padding: 0; }
+}
+
+/* =======================================================
+   🔒 隱藏防護：加在檔案最底部（以下為新增內容）
+   ======================================================= */
+/* 預設先隱藏日曆區塊與表單，等 script.js 驗證身份通過後才開啟 */
+.calendar-wrapper, .leader-filter-container, .form-wrapper {
+    display: none;
+}
