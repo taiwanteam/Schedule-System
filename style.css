@@ -269,3 +269,32 @@ body {
 .btn-primary:hover { background: #2b6cb0; }
 .btn-danger:hover { background: #c53030; }
 
+/* =======================================================
+   🖨️ ✨ 新增：智慧型列印/另存 PDF 最佳化樣式
+   ======================================================= */
+@media print {
+    body {
+        background-color: #fff !important;
+        padding: 0 !important;
+    }
+    /* 隱藏完全不需要列印的雜項元件（登入、列印按鈕、篩選標籤、新增表單、彈出視窗） */
+    #loginBtn, #printBtn, #cleanupBtn, #userInfo,
+    .leader-filter-container, 
+    .form-wrapper, 
+    .modal-overlay,
+    .fc-header-toolbar button {
+        display: none !important;
+    }
+    /* 保持標頭與日曆主體寬度填滿紙張 */
+    .system-header {
+        box-shadow: none !important;
+        border-bottom: 2px solid #333 !important;
+        padding: 10px 0 !important;
+        margin-bottom: 20px !important;
+    }
+    .calendar-wrapper {
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+}
+
