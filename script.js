@@ -2,9 +2,9 @@
 // 1. 引入 Firebase SDK 模組
 // =======================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, runTransaction, doc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-// import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, runTransaction, doc, query, where, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 // =======================================================
 // 2. Firebase 專案配置與初始化
 // =======================================================
@@ -73,16 +73,41 @@ document.addEventListener('DOMContentLoaded', function() {
             updateMinguoTitle(info.view.title);
         },
 
-        // 點擊行程卡片跳出詳細資訊
+        // 點擊行程卡片：彈出客製化修改/刪除視窗並做所有權限判斷
         eventClick: function(info) {
-            alert(
-                `👑 長官：${info.event.extendedProps.leader}\n` +
-                `📋 行程：${info.event.extendedProps.originTitle}\n` +
-                `📍 地點：${info.event.extendedProps.room}\n` +
-                `🏢 科室：${info.event.extendedProps.dept}\n` +
-                `👤 聯絡人：${info.event.extendedProps.userName}\n` +
-                `⏰ 時間：${info.event.extendedProps.startTime.replace('T',' ')} ~ ${info.event.extendedProps.endTime.replace('T',' ')}`
-            );
+            const props = info.event.extendedProps;
+            const isOwner = (props.userEmail === currentUserEmail);
+            
+            // 將點擊的行程舊資料塞入 Modal 表單欄位中
+            document.getElementById('editDocId').value = info.event.id;
+            document.getElementById('editLeader').value = props.leader;
+            document.getElementById('editTitle').value = props.originTitle;
+            document.getElementById('editRoom').value = props.room;
+            document.getElementById('editDept').value = props.dept;
+            document.getElementById('editUserName').value = props.userName;
+            document.getElementById('editStart').value = props.startTime;
+            document.getElementById('editEnd').value = props.endTime;
+
+            const fields = ['editLeader', 'editTitle', 'editRoom', 'editDept', 'editUserName', 'editStart', 'editEnd'];
+            
+            if (isOwner) {
+                // 🟢 建立者本人：解鎖欄位、顯示功能按鈕
+                fields.forEach(id => document.getElementById(id).disabled = false);
+                document.getElementById('saveBtn').style.display = 'inline-block';
+                document.getElementById('deleteBtn').style.display = 'inline-block';
+                document.getElementById('ownerNotice').innerText = "✨ 您是此行程的建立者，可進行修改或刪除。";
+                document.getElementById('ownerNotice').style.color = "#2f855a";
+            } else {
+                // 🔴 非建立者：欄位全鎖定（唯讀）、隱藏儲存與刪除按鈕
+                fields.forEach(id => document.getElementById(id).disabled = true);
+                document.getElementById('saveBtn').style.display = 'none';
+                document.getElementById('deleteBtn').style.display = 'none';
+                document.getElementById('ownerNotice').innerText = `🔒 唯讀模式：此行程由 ${props.userEmail || '其他管理員'} 建立。`;
+                document.getElementById('ownerNotice').style.color = "#c53030";
+            }
+
+            // 移除隱藏類別，秀出視窗
+            document.getElementById('eventModal').classList.remove('auth-hidden');
         }
     });
 
@@ -92,78 +117,54 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5. 監聽 Firebase 登入狀態並控制元件顯示
     // =======================================================
     onAuthStateChanged(auth, (user) => {
-    const formSection = document.querySelector('.form-wrapper');
-    const calendarSection = document.querySelector('.calendar-wrapper');
-    const filterSection = document.querySelector('.leader-filter-container');
+        const formSection = document.querySelector('.form-wrapper');
+        const calendarSection = document.querySelector('.calendar-wrapper');
+        const filterSection = document.querySelector('.leader-filter-container');
 
-    if (user) {
-        currentUserEmail = user.email;
-        document.getElementById('userInfo').innerText = `👋 歡迎，${user.displayName || '管理員'}`;
-        document.getElementById('userInfo').style.display = 'inline';
-        document.getElementById('loginBtn').style.display = 'none';
-        document.getElementById('cleanupBtn').style.display = 'inline-block';
-        
-        // 🔓 登入後：移除隱藏類別，秀出所有功能（比傳統 style.display 更穩定）
-        calendarSection.classList.remove('auth-hidden');
-        filterSection.classList.remove('auth-hidden');
-        formSection.classList.remove('auth-hidden'); 
-        
-        loadData(); 
-        setTimeout(() => { calendar.updateSize(); }, 100);
-        
-    } else {
-        currentUserEmail = "";
-        document.getElementById('userInfo').style.display = 'none';
-        document.getElementById('loginBtn').style.display = 'inline-block';
-        document.getElementById('cleanupBtn').style.display = 'none';
-        
-        // 🔒 未登入時：加回隱藏類別
-        calendarSection.classList.add('auth-hidden');
-        filterSection.classList.add('auth-hidden');
-        formSection.classList.add('auth-hidden');
-        
-        if(calendar) calendar.removeAllEvents();
-    }
-});
+        if (user) {
+            currentUserEmail = user.email;
+            document.getElementById('userInfo').innerText = `👋 歡迎，${user.displayName || '管理員'}`;
+            document.getElementById('userInfo').style.display = 'inline';
+            document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('cleanupBtn').style.display = 'inline-block';
+            
+            // 🔓 登入後：移除隱藏類別，秀出所有功能
+            calendarSection.classList.remove('auth-hidden');
+            filterSection.classList.remove('auth-hidden');
+            formSection.classList.remove('auth-hidden'); 
+            
+            loadData(); 
+            setTimeout(() => { calendar.updateSize(); }, 100);
+            
+        } else {
+            currentUserEmail = "";
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('loginBtn').style.display = 'inline-block';
+            document.getElementById('cleanupBtn').style.display = 'none';
+            
+            // 🔒 未登入時：加回隱藏類別
+            calendarSection.classList.add('auth-hidden');
+            filterSection.classList.add('auth-hidden');
+            formSection.classList.add('auth-hidden');
+            document.getElementById('eventModal').classList.add('auth-hidden'); // 登出時一併隱藏可能開著的彈窗
+            
+            if(calendar) calendar.removeAllEvents();
+        }
+    });
 
     // =======================================================
-    // 6. 現代事件監聽器綁定 (取代舊式 HTML onclick)
+    // 6. 現代事件監聽器綁定
     // =======================================================
     
-    // A. 綁定「Google 登入」按鈕（含防重複點擊）
-    // const loginBtn = document.getElementById('loginBtn');
-    // if (loginBtn) {
-    //     loginBtn.addEventListener('click', async () => {
-    //         try {
-    //             loginBtn.disabled = true; // 鎖定按鈕
-    //             await signInWithPopup(auth, provider);
-    //             console.log("Google 登入成功發起");
-    //         } catch (error) {
-    //             console.error("登入失敗：", error);
-    //             if (error.code === 'auth/cancelled-popup-request') {
-    //                 console.log('前一個登入視窗尚未關閉，已攔截重複請求。');
-    //             } else if (error.code === 'auth/popup-closed-by-user') {
-    //                 alert("您已關閉登入視窗，請重新嘗試。");
-    //             } else {
-    //                 alert(`Google 登入失敗：${error.message}`);
-    //             }
-    //         } finally {
-    //             loginBtn.disabled = false; // 解除按鈕鎖定
-    //         }
-    //     });
-    // }
-    
-    // A. 綁定「Google 登入」按鈕（加入關分頁自動登出機制）
+    // A. 綁定「Google 登入」按鈕（強制關分頁自動登出）
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', async () => {
             try {
                 loginBtn.disabled = true; // 鎖定按鈕
                 
-                // 🔐 強制設定登入狀態為 SESSION（關閉分頁或瀏覽器即失效）
+                // 🔐 強制設定狀態為 SESSION
                 await setPersistence(auth, browserSessionPersistence);
-                
-                // 設定完後再發起登入
                 await signInWithPopup(auth, provider);
                 console.log("Google 登入成功發起（會話模式）");
             } catch (error) {
@@ -200,6 +201,22 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cleanupBtn) {
         cleanupBtn.addEventListener('click', autoCleanup);
     }
+
+    // E. 【新綁定】彈出詳情視窗內部的控制功能
+    const eventModal = document.getElementById('eventModal');
+    if (eventModal) {
+        // 點擊「X」關閉視窗
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            eventModal.classList.add('auth-hidden');
+        });
+        // 點擊視窗外部半透明黑底關閉視窗
+        eventModal.addEventListener('click', (e) => {
+            if (e.target === eventModal) eventModal.classList.add('auth-hidden');
+        });
+    }
+    // 綁定儲存與刪除功能
+    document.getElementById('saveBtn').addEventListener('click', updateMeeting);
+    document.getElementById('deleteBtn').addEventListener('click', deleteMeeting);
 });
 
 // =======================================================
@@ -223,13 +240,12 @@ function updateMinguoTitle(titleString) {
 function filterLeader(leaderName) {
     currentFilterLeader = leaderName;
     
-    // 變更按鈕的 active 視覺樣式
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.leader === leaderName) btn.classList.add('active');
     });
 
-    loadData(); // 重新撈取並過濾日曆顯示
+    loadData(); 
 }
 
 // =======================================================
@@ -244,7 +260,6 @@ async function loadData() {
         snapshot.forEach((d) => {
             const m = d.data();
 
-            // 一鍵篩選核心邏輯
             if (currentFilterLeader !== "全部" && m.leader !== currentFilterLeader) {
                 return;
             }
@@ -265,7 +280,8 @@ async function loadData() {
                     dept: m.dept,
                     userName: m.userName,
                     startTime: m.startTime,
-                    endTime: m.endTime
+                    endTime: m.endTime,
+                    userEmail: m.userEmail // ✨ 這裡有確實傳遞 userEmail，Modal 才能判斷所有權
                 }
             });
         });
@@ -278,7 +294,7 @@ async function loadData() {
 }
 
 // =======================================================
-// 🛡️ 新增行程：長官專屬「防撞期 Transaction 交易機制」
+// 🛡️ 新增行程：長官專屬「防撞期交易機制」
 // =======================================================
 async function addMeeting() {
     const leader = document.getElementById('leader').value;
@@ -290,7 +306,6 @@ async function addMeeting() {
     const userName = document.getElementById('userName').value.trim();
     const addBtn = document.getElementById('addBtn');
 
-    // 基本欄位驗證
     if (!title || !start || !end || !room || !dept || !userName) {
         alert("❌ 填寫不完整！請檢查所有帶有紅色星號 (*) 的欄位是否皆已填寫。");
         return;
@@ -308,21 +323,17 @@ async function addMeeting() {
     addBtn.innerText = "交易檢查中...";
 
     try {
-        // ✨ 【修正步驟 1】：先在 Transaction 外面查出所有行程
-        // 為了效能與精準度，這裡可以直接下 query 篩選出「同一位長官」的行程即可
         const scheduleCollRef = collection(db, "schedule");
         const leaderQuery = query(scheduleCollRef, where("leader", "==", leader));
         const snapshot = await getDocs(leaderQuery);
 
         let hasConflict = false;
 
-        // ✨ 【修正步驟 2】：在外面先比對時間是否有衝突
         snapshot.forEach((docSnap) => {
             const existingMeeting = docSnap.data();
             const existS = new Date(existingMeeting.startTime);
             const existE = new Date(existingMeeting.endTime);
 
-            // 判斷時間區間是否有交集
             if (newStart < existE && newEnd > existS) {
                 hasConflict = true;
             }
@@ -332,7 +343,6 @@ async function addMeeting() {
             throw new Error("CONFLICT_DETECTED");
         }
 
-        // 🔥 【修正步驟 3】：確認無衝突後，啟動 Transaction 純粹用來「安全寫入」
         await runTransaction(db, async (transaction) => {
             const newDocRef = doc(collection(db, "schedule"));
             
@@ -351,13 +361,12 @@ async function addMeeting() {
 
         alert(`🎉 成功登錄！已將行程排入【${leader}】行事曆。`);
         
-        // 清空表單文字框
         document.getElementById('title').value = "";
         document.getElementById('room').value = "";
         document.getElementById('dept').value = "";
         document.getElementById('userName').value = "";
         
-        loadData(); // 重新整理畫面
+        loadData(); 
     } catch (error) {
         if (error.message === "CONFLICT_DETECTED") {
             alert(`🚨 登記失敗！【${leader}】在此時間段內已有其他公務行程，請先確認長官行程表！`);
@@ -372,14 +381,120 @@ async function addMeeting() {
 }
 
 // =======================================================
-// 🧹 自動清理舊資料（結構預留）
+// ✏️ 執行修改行程邏輯
+// =======================================================
+async function updateMeeting() {
+    const docId = document.getElementById('editDocId').value;
+    const leader = document.getElementById('editLeader').value;
+    const title = document.getElementById('editTitle').value.trim();
+    const room = document.getElementById('editRoom').value.trim();
+    const dept = document.getElementById('editDept').value.trim();
+    const userName = document.getElementById('editUserName').value.trim();
+    const start = document.getElementById('editStart').value;
+    const end = document.getElementById('editEnd').value;
+
+    if (!title || !room || !dept || !userName || !start || !end) {
+        alert("❌ 欄位不能留空！");
+        return;
+    }
+    if (new Date(start) >= new Date(end)) {
+        alert("❌ 結束時間必須晚於開始時間！");
+        return;
+    }
+
+    if (!confirm("確定要儲存本次的行程修改嗎？")) return;
+
+    try {
+        const docRef = doc(db, "schedule", docId);
+        await updateDoc(docRef, {
+            leader: leader,
+            title: title,
+            room: room,
+            dept: dept,
+            userName: userName,
+            startTime: start,
+            endTime: end,
+            updatedAt: new Date().toISOString()
+        });
+
+        alert("🎉 行程修改成功！");
+        document.getElementById('eventModal').classList.add('auth-hidden');
+        loadData(); 
+    } catch (error) {
+        alert("❌ 修改失敗：您可能沒有此權限（或網絡異常）。");
+        console.error(error);
+    }
+}
+
+// =======================================================
+// 🗑️ 執行刪除行程邏輯
+// =======================================================
+async function deleteMeeting() {
+    const docId = document.getElementById('editDocId').value;
+    
+    if (!confirm("⚠️ 警告：確定要永久刪除此筆行程嗎？刪除後將無法復原。")) return;
+
+    try {
+        const docRef = doc(db, "schedule", docId);
+        await deleteDoc(docRef);
+
+        alert("🗑️ 行程已成功刪除！");
+        document.getElementById('eventModal').classList.add('auth-hidden');
+        loadData(); 
+    } catch (error) {
+        alert("❌ 刪除失敗：您可能沒有此權限。");
+        console.error(error);
+    }
+}
+
+// =======================================================
+// 🧹 自動清理舊資料（一鍵刪除一個月前的所有過期行程）
 // =======================================================
 async function autoCleanup() {
+    if (!confirm("⚠️ 確定要自動清理【一個月以前】的所有舊行程嗎？\n此操作將跨越權限限制，強制刪除所有人的過期資料且無法復原！")) return;
+
+    const cleanupBtn = document.getElementById('cleanupBtn');
+    cleanupBtn.disabled = true;
+    cleanupBtn.innerText = "舊資料清理中...";
+
     try {
-        console.log("啟動清理機制...");
-        // 這裡可以寫入你的刪除邏輯，例如篩選出 createdAt 比一個月前更早的 doc 進行 deleteDoc
-        alert("🧹 資料清理功能執行成功！");
+        // 📅 計算 30 天前的時間切點
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const isoThreshold = thirtyDaysAgo.toISOString();
+
+        // 🔍 獲取所有行程
+        const scheduleCollRef = collection(db, "schedule");
+        const snapshot = await getDocs(scheduleCollRef);
+        
+        // 📦 初始化批次操作 (Batch)
+        const batch = writeBatch(db);
+        let count = 0;
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            
+            // 比對建立時間 (createdAt)，早於 30 天前者塞進刪除清單
+            if (data.createdAt && data.createdAt < isoThreshold) {
+                batch.delete(docSnap.ref);
+                count++;
+            }
+        });
+
+        if (count === 0) {
+            alert("✨ 檢查完畢！目前資料庫中沒有一個月前的舊資料，無需清理。");
+        } else {
+            // 🚀 送出批次提交
+            await batch.commit();
+            alert(`🧹 清理成功！已自動刪除 ${count} 筆一個月前的歷程行程。`);
+            loadData(); 
+        }
+
     } catch (error) {
-        console.error("清理失敗：", error);
+        alert("❌ 清理失敗：請確認網路連線或安全規則設定。");
+        console.error("自動清理失敗詳情：", error);
+    } finally {
+        cleanupBtn.disabled = false;
+        cleanupBtn.innerText = "🧹 清理一個月前舊資料";
     }
 }
