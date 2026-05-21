@@ -39,6 +39,21 @@ body {
 .btn-submit { background-color: #2b6cb0; color: #fff; width: 100%; height: 40px; }
 .btn-submit:hover { background-color: #2c5282; }
 
+/* 📄 匯出 PDF / 列印按鈕樣式 */
+.btn-print {
+    background: #4a5568;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-right: 6px;
+}
+.btn-print:hover {
+    background: #2d3748;
+}
+
 /* =======================================================
    🎛️ 長官行程篩選標籤列 (Tabs)
    ======================================================= */
@@ -102,35 +117,86 @@ body {
 .fc .fc-button-primary:disabled { background-color: #a0aec0 !important; opacity: 0.6; }
 
 /* =======================================================
-   🛡️ 核心防震：鎖死「月/週/日」日曆卡片排版，絕不跑位裁切
+   🎴 核心優化：極簡直式卡片排版（只留時間、誰、地點）
    ======================================================= */
-/* 1. 月檢視：整齊的大卡片排版 */
-.fc-daygrid-block-event {
-    padding: 4px 6px !important;
-    font-size: 0.9rem !important;
-    border-radius: 4px !important;
+/* 覆蓋 FullCalendar 預設的外框超連結，使其改為完全透明以容納自訂卡片 */
+.fc-v-event, .fc-daygrid-event, .fc-daygrid-block-event {
+    background: transparent !important;
     border: none !important;
-    margin-top: 2px !important;
+    padding: 0 !important;
+    margin: 2px 4px !important;
+}
+
+/* 直式微型卡片主體 */
+.fc-custom-card {
+    padding: 5px 8px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    white-space: normal;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 卡片第一層：長官識別與時間 */
+.fc-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+    padding-bottom: 2px;
+    margin-bottom: 1px;
+}
+
+.fc-card-badge {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+}
+.fc-card-badge::before {
+    content: "👑 ";
+}
+
+.fc-card-time {
+    font-size: 11px;
+    opacity: 0.95;
+    font-weight: 500;
+}
+
+/* 卡片第二層：地點資訊 */
+.fc-card-room {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.9;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* 限制一行，避免拉長 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* 2. 週/日檢視：24小時縱向時間軸防擠壓變形 */
 .fc-timegrid-event {
-    height: auto !important;           /* 允許卡片隨字數向下長高 */
-    min-height: 50px !important;       /* 確保最低舒適點擊高度 */
+    height: auto !important;
+    min-height: 45px !important;
     border: none !important;
-    border-left: 4px solid rgba(0,0,0,0.3) !important; /* 加強左側識別條 */
-    border-radius: 4px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+    box-shadow: none !important;
 }
 .fc-timegrid-event .fc-event-main {
-    padding: 6px 8px !important;
-    white-space: normal !important;    /* 解鎖文字：強迫自動換行 */
-    word-break: break-all !important;   /* 防止連續英數字撐破欄位 */
-    font-size: 0.9rem !important;
-    line-height: 1.4 !important;
+    padding: 0 !important;
 }
 
-/* 3. 時間軸左側「24小時制」寬度微調，讓 13:00 顯示得更舒適 */
+/* 時間軸左側「24小時制」寬度微調 */
 .fc .fc-timegrid-slot-label {
     font-weight: bold;
     color: #4a5568;
@@ -166,17 +232,9 @@ body {
 .form-group input:focus, .form-group select:focus { border-color: #3182ce; box-shadow: 0 0 0 3px rgba(66,153,225,0.15); }
 .form-group.flex-end { justify-content: flex-end; }
 
-/* 列印最佳化：開會列印時，隱藏按鈕與表單，只留乾淨日曆 */
-@media print {
-    .system-header, .leader-filter-container, .form-wrapper, .fc-header-toolbar { display: none !important; }
-    body { padding: 0; background: #fff; }
-    .calendar-wrapper { box-shadow: none; padding: 0; }
-}
-
 /* =======================================================
-   🔒 隱藏防護優化（配合 JS 狀態控管，最乾淨安全）
+   🔒 隱藏防護與彈出視窗 (Modal)
    ======================================================= */
-/* 💡 使用 !important 確保未驗證前誰也無法繞過。當登入成功，JS 移除該 class 後便完美顯示 */
 .auth-hidden {
     display: none !important;
 }
@@ -212,8 +270,10 @@ body {
     border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 16px;
 }
 .owner-status-notice { font-size: 13px; color: #718096; font-style: italic; margin-top: 8px; }
-/* 按鈕樣式 */
+
+/* 彈窗按鈕樣式 */
 .btn-primary { background: #3182ce; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
 .btn-danger { background: #e53e3e; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
 .btn-primary:hover { background: #2b6cb0; }
 .btn-danger:hover { background: #c53030; }
+
