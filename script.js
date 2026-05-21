@@ -493,11 +493,8 @@ async function deleteMeeting() {
 // =======================================================
 // 🧹 自動清理舊資料（一鍵刪除一個月前的所有過期行程）
 // =======================================================
-// =======================================================
-// 🧹 自動清理舊資料（一鍵刪除一個月前的所有過期行程）
-// =======================================================
 async function autoCleanup() {
-    // 📢 【修正】移除 isSuperAdmin 的前端攔截，改成純提示，讓所有人都能送出請求去撞後端 Rules
+    // 📢 點擊時的前置警示提示
     alert("⚠️ 系統提示：全系統清理作業將跨越權限限制。\n非最高管理員（或未配置後端安全性規則者），後端將會直接拒絕此刪除請求。");
 
     if (!confirm("⚠️ 確定要自動清理【一個月以前】的所有舊行程嗎？\n此操作將強制刪除過期資料且無法復原！")) return;
@@ -512,36 +509,60 @@ async function autoCleanup() {
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const isoThreshold = thirtyDaysAgo.toISOString();
 
-        // 🔍 獲取所有行程
+        // 🔍 步驟 1：獲取所有行程
         const scheduleCollRef = collection(db, "schedule");
-        const snapshot = await getDocs(scheduleCollRef);
+        let snapshot;
         
-        // 📦 初始化批次操作 (Batch)
+        try {
+            snapshot = await getDocs(scheduleCollRef);
+        } catch (readError) {
+            // 🔒 如果在「讀取階段」就被擋，代表沒有查看全表權限，直接判定非管理員
+            if (readError.code === 'permission-denied') {
+                throw new Error("READ_PERMISSION_DENIED");
+            }
+            throw readError; // 其他網路異常直接往外拋
+        }
+        
+        // 📦 步驟 2：初始化批次操作 (Batch)
         const batch = writeBatch(db);
         let count = 0;
 
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
+            // 💡 加上防呆：確保 createdAt 欄位存在且過期
             if (data.createdAt && data.createdAt < isoThreshold) {
                 batch.delete(docSnap.ref);
                 count++;
             }
         });
 
+        // 💡 最佳化防呆：如果算出來根本沒舊資料，優雅提示並直接中斷，不浪費雲端連線
         if (count === 0) {
             alert("✨ 檢查完畢！目前資料庫中沒有一個月前的舊資料，無需清理。");
-        } else {
-            // 🚀 送出批次提交
+            return; 
+        }
+
+        // 🚀 步驟 3：送出批次提交（真正考驗最高管理員刪除權限的重頭戲）
+        try {
             await batch.commit();
             alert(`🧹 清理成功！已自動刪除 ${count} 筆一個月前的歷程行程。`);
             loadData(); 
+        } catch (writeError) {
+            // 🔒 如果這裏被擋，代表能看不能刪
+            if (writeError.code === 'permission-denied') {
+                throw new Error("WRITE_PERMISSION_DENIED");
+            }
+            throw writeError;
         }
 
     } catch (error) {
-        // 🛡️ 真正的大閘：如果你是管理員，後端 Rules 放行，這裏就不會觸發
-        // 萬一是非管理員，送去雲端後會在這裡被 catch 攔截並彈出警告
-        if (error.code === 'permission-denied' || error.message.includes('permission')) {
-            alert("🔒 系統安全性拒絕：您的 Google 帳號並非最高管理員，後端已拒絕您的全系統清理請求！");
+        // 🛡️ 根據不同階段的封鎖，彈出精準的專業提示
+        if (error.message === "READ_PERMISSION_DENIED") {
+            alert("🔒 安全性拒絕 (Read)：您的帳號無權讀取全系統原始資料，拒絕清理請求。");
+        } else if (error.message === "WRITE_PERMISSION_DENIED") {
+            alert("🔒 安全性拒絕 (Write)：後端安全規則驗證失敗！您的 Google 帳號並非最高管理員，無權刪除他人資料。");
+        } else if (error.code === 'permission-denied') {
+            alert("🔒 系統安全性拒絕：後端驗證失敗，已拒絕您的全系統清理請求！");
         } else {
             alert("❌ 清理失敗：請確認網路連線或安全規則設定。");
         }
@@ -550,5 +571,4 @@ async function autoCleanup() {
         cleanupBtn.disabled = false;
         cleanupBtn.innerText = "🧹 清理一個月前舊資料";
     }
-}
 }
