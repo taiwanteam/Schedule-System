@@ -153,13 +153,9 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('userInfo').style.display = 'inline';
             document.getElementById('loginBtn').style.display = 'none';
             document.getElementById('printBtn').style.display = 'inline-block'; // ✨ 補上這一行：登入後顯示列印按鈕
-            // document.getElementById('cleanupBtn').style.display = 'inline-block';
-            // 👑 ✨ 智慧型權限控管：只有指定管理員登入，才顯示清理按鈕
-            if (user.email === 'm700912@gmail.com') {
             document.getElementById('cleanupBtn').style.display = 'inline-block';
-            } else {
-            document.getElementById('cleanupBtn').style.display = 'none'; // 其他人登入就隱藏
-            }
+
+ 
             
             // 🔓 登入後：移除隱藏類別，秀出所有功能
             calendarSection.classList.remove('auth-hidden');
