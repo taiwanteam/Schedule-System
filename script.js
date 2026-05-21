@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
 // 🎴 【新加入】客製化卡片式呈現邏輯
-eventContent: function(arg) {
+            eventContent: function(arg) {
             const props = arg.event.extendedProps;
             const bgColor = arg.event.backgroundColor;
             
@@ -400,6 +400,8 @@ async function addMeeting() {
         document.getElementById('room').value = "";
         document.getElementById('dept').value = "";
         document.getElementById('userName').value = "";
+        document.getElementById('startTime').value = "";
+        document.getElementById('endTime').value = "";
         
         loadData(); 
     } catch (error) {
