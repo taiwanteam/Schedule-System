@@ -28,6 +28,7 @@ const provider = new GoogleAuthProvider();
 let calendar = null;
 let currentFilterLeader = "全部"; // 預設查看所有行程
 let currentUserEmail = "";
+let isSuperAdmin = false; // 預設不是超級管理員
 
 // 長官專屬識別顏色
 const leaderColors = {
@@ -147,39 +148,70 @@ document.addEventListener('DOMContentLoaded', function() {
         const calendarSection = document.querySelector('.calendar-wrapper');
         const filterSection = document.querySelector('.leader-filter-container');
 
-        if (user) {
-            currentUserEmail = user.email;
-            document.getElementById('userInfo').innerText = `👋 歡迎，${user.displayName || '管理員'}`;
-            document.getElementById('userInfo').style.display = 'inline';
-            document.getElementById('loginBtn').style.display = 'none';
-            document.getElementById('printBtn').style.display = 'inline-block'; // ✨ 補上這一行：登入後顯示列印按鈕
-            document.getElementById('cleanupBtn').style.display = 'inline-block';
+// 假設這段是您的 Firebase 登入狀態監聽器，記得確認 (user) 前面有加上 async
+/* auth.onAuthStateChanged(async (user) => { */ 
 
- 
+    if (user) {
+        currentUserEmail = user.email;
+        document.getElementById('userInfo').innerText = `👋 歡迎，${user.displayName || '管理員'}`;
+        document.getElementById('userInfo').style.display = 'inline';
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('printBtn').style.display = 'inline-block'; 
+
+        // 🔓 登入後：移除隱藏類別，秀出所有功能
+        calendarSection.classList.remove('auth-hidden');
+        filterSection.classList.remove('auth-hidden');
+        formSection.classList.remove('auth-hidden'); 
+
+        // 👑 🛡️ 雲端動態查詢超級管理員權限
+        try {
+            // 💡 建議作法：如果您在 script.js 頂端已經 import 過 doc, getDoc，
+            // 這裡就可以把下面這行 await import 註解掉，直接執行 getDoc 效能會更好！
+            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"); 
             
-            // 🔓 登入後：移除隱藏類別，秀出所有功能
-            calendarSection.classList.remove('auth-hidden');
-            filterSection.classList.remove('auth-hidden');
-            formSection.classList.remove('auth-hidden'); 
+            const configDoc = await getDoc(doc(db, "system_config", "roles"));
             
-            loadData(); 
-            setTimeout(() => { calendar.updateSize(); }, 100);
-            
-        } else {
-            currentUserEmail = "";
-            document.getElementById('userInfo').style.display = 'none';
-            document.getElementById('loginBtn').style.display = 'inline-block';
-            document.getElementById('printBtn').style.display = 'none'; // ✨ 補上這一行：登入後顯示列印按鈕
+            if (configDoc.exists()) {
+                const adminEmail = configDoc.data().superAdmin;
+                
+                // ✨ 比對 Email，符合就將全域變數設為 true 並秀出按鈕
+                if (user.email === adminEmail) {
+                    isSuperAdmin = true; 
+                    document.getElementById('cleanupBtn').style.display = 'inline-block';
+                } else {
+                    isSuperAdmin = false;
+                    document.getElementById('cleanupBtn').style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error("權限查詢失敗:", error);
+            isSuperAdmin = false;
             document.getElementById('cleanupBtn').style.display = 'none';
-            
-            // 🔒 未登入時：加回隱藏類別
-            calendarSection.classList.add('auth-hidden');
-            filterSection.classList.add('auth-hidden');
-            formSection.classList.add('auth-hidden');
-            document.getElementById('eventModal').classList.add('auth-hidden'); // 登出時一併隱藏可能開著的彈窗
-            
-            if(calendar) calendar.removeAllEvents();
         }
+
+        // 載入資料與更新日曆尺寸
+        loadData(); 
+        setTimeout(() => { if (calendar) calendar.updateSize(); }, 100);
+        
+    } else {
+        // 🔒 登出狀態：重設權限與隱藏所有元件
+        currentUserEmail = "";
+        isSuperAdmin = false; 
+        
+        document.getElementById('userInfo').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'inline-block';
+        document.getElementById('printBtn').style.display = 'none'; 
+        document.getElementById('cleanupBtn').style.display = 'none';
+        
+        calendarSection.classList.add('auth-hidden');
+        filterSection.classList.add('auth-hidden');
+        formSection.classList.add('auth-hidden');
+        document.getElementById('eventModal').classList.add('auth-hidden'); 
+        
+        if (calendar) calendar.removeAllEvents();
+    }
+
+/* }); */
     });
 
     // =======================================================
