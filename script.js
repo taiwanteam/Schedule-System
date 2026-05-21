@@ -165,8 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 👑 🛡️ 雲端動態查詢超級管理員權限
         try {
-            // 💡 建議作法：如果您在 script.js 頂端已經 import 過 doc, getDoc，
-            // 這裡就可以把下面這行 await import 註解掉，直接執行 getDoc 效能會更好！
+
             const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"); 
             
             const configDoc = await getDoc(doc(db, "system_config", "roles"));
