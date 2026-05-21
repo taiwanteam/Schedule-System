@@ -144,43 +144,54 @@ body {
     box-sizing: border-box;
 }
 
-/* 卡片第一層：長官識別與時間 */
-.fc-card-header {
+/* 🎴 日曆微型卡片主體 (嚴格三行直式) */
+.fc-custom-card {
+    padding: 6px 8px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1.4;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-    padding-bottom: 2px;
-    margin-bottom: 1px;
+    flex-direction: column; /* 強迫由上往下排 */
+    gap: 4px; /* 每一行之間的固定垂直間距 */
+    white-space: normal;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
 
+/* 第一行：長官標籤 */
+.fc-card-leader-row {
+    display: flex;
+    align-items: center;
+}
 .fc-card-badge {
     background: rgba(255, 255, 255, 0.25);
-    padding: 1px 4px;
+    padding: 1px 5px;
     border-radius: 3px;
     font-weight: bold;
     font-size: 11px;
-    display: flex;
-    align-items: center;
 }
 .fc-card-badge::before {
     content: "👑 ";
 }
 
-.fc-card-time {
+/* 第二行：時間 */
+.fc-card-time-row {
     font-size: 11px;
     opacity: 0.95;
     font-weight: 500;
 }
 
-/* 卡片第二層：地點資訊 */
-.fc-card-room {
+/* 第三行：地點 */
+.fc-card-room-row {
     font-size: 12px;
     font-weight: 500;
     opacity: 0.9;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 1; /* 限制一行，避免拉長 */
+    -webkit-line-clamp: 1; /* 限制一行，避免文字太長破壞排版 */
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
