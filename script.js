@@ -73,6 +73,32 @@ document.addEventListener('DOMContentLoaded', function() {
             updateMinguoTitle(info.view.title);
         },
 
+// 🎴 【新加入】客製化卡片式呈現邏輯
+eventContent: function(arg) {
+            const props = arg.event.extendedProps;
+            const bgColor = arg.event.backgroundColor;
+            
+            // ⏰ 格式化時間 (只取 時:分)
+            const startStr = props.startTime ? props.startTime.split('T')[1].substring(0, 5) : '';
+            const endStr = props.endTime ? props.endTime.split('T')[1].substring(0, 5) : '';
+            const timeRange = (startStr && endStr) ? `${startStr}-${endStr}` : '';
+
+            // 🛠️ 動態建構極簡 HTML 直式卡片
+            const cardDom = document.createElement('div');
+            cardDom.className = 'fc-custom-card';
+            cardDom.style.backgroundColor = bgColor; // 套用長官專屬顏色
+            
+            cardDom.innerHTML = `
+                <div class="fc-card-leader-row">
+                    <span class="fc-card-badge">${props.leader}</span>
+                </div>
+                <div class="fc-card-time-row">⏰ ${timeRange}</div>
+                <div class="fc-card-room-row">📍 ${props.room}</div>
+            `;
+            
+            return { domNodes: [cardDom] };
+        },
+        
         // 點擊行程卡片：彈出客製化修改/刪除視窗並做所有權限判斷
         eventClick: function(info) {
             const props = info.event.extendedProps;
