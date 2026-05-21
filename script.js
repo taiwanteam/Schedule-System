@@ -3,8 +3,8 @@
 // =======================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs, runTransaction, doc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
+// import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 // =======================================================
 // 2. Firebase 專案配置與初始化
 // =======================================================
@@ -131,13 +131,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // =======================================================
     
     // A. 綁定「Google 登入」按鈕（含防重複點擊）
+    // const loginBtn = document.getElementById('loginBtn');
+    // if (loginBtn) {
+    //     loginBtn.addEventListener('click', async () => {
+    //         try {
+    //             loginBtn.disabled = true; // 鎖定按鈕
+    //             await signInWithPopup(auth, provider);
+    //             console.log("Google 登入成功發起");
+    //         } catch (error) {
+    //             console.error("登入失敗：", error);
+    //             if (error.code === 'auth/cancelled-popup-request') {
+    //                 console.log('前一個登入視窗尚未關閉，已攔截重複請求。');
+    //             } else if (error.code === 'auth/popup-closed-by-user') {
+    //                 alert("您已關閉登入視窗，請重新嘗試。");
+    //             } else {
+    //                 alert(`Google 登入失敗：${error.message}`);
+    //             }
+    //         } finally {
+    //             loginBtn.disabled = false; // 解除按鈕鎖定
+    //         }
+    //     });
+    // }
+    
+    // A. 綁定「Google 登入」按鈕（加入關分頁自動登出機制）
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', async () => {
             try {
                 loginBtn.disabled = true; // 鎖定按鈕
+                
+                // 🔐 強制設定登入狀態為 SESSION（關閉分頁或瀏覽器即失效）
+                await setPersistence(auth, browserSessionPersistence);
+                
+                // 設定完後再發起登入
                 await signInWithPopup(auth, provider);
-                console.log("Google 登入成功發起");
+                console.log("Google 登入成功發起（會話模式）");
             } catch (error) {
                 console.error("登入失敗：", error);
                 if (error.code === 'auth/cancelled-popup-request') {
