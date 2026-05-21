@@ -280,34 +280,34 @@ async function addMeeting() {
     addBtn.innerText = "交易檢查中...";
 
     try {
-        // 🔥 啟動標準雲端防撞核心交易
-        await runTransaction(db, async (transaction) => {
-            // 💡 修正：在 Transaction 內必須使用 transaction.get() 來維持絕對事務鎖定
-            const scheduleCollRef = collection(db, "schedule");
-            const snapshot = await transaction.get(query(scheduleCollRef));
-            let hasConflict = false;
+        // ✨ 【修正步驟 1】：先在 Transaction 外面查出所有行程
+        // 為了效能與精準度，這裡可以直接下 query 篩選出「同一位長官」的行程即可
+        const scheduleCollRef = collection(db, "schedule");
+        const leaderQuery = query(scheduleCollRef, where("leader", "==", leader));
+        const snapshot = await getDocs(leaderQuery);
 
-            snapshot.forEach((docSnap) => {
-                const existingMeeting = docSnap.data();
+        let hasConflict = false;
 
-                // 同一位長官且時間段相撞時引發衝突
-                if (existingMeeting.leader === leader) {
-                    const existS = new Date(existingMeeting.startTime);
-                    const existE = new Date(existingMeeting.endTime);
+        // ✨ 【修正步驟 2】：在外面先比對時間是否有衝突
+        snapshot.forEach((docSnap) => {
+            const existingMeeting = docSnap.data();
+            const existS = new Date(existingMeeting.startTime);
+            const existE = new Date(existingMeeting.endTime);
 
-                    // 判斷時間區間是否有交集
-                    if (newStart < existE && newEnd > existS) {
-                        hasConflict = true;
-                    }
-                }
-            });
-
-            if (hasConflict) {
-                throw new Error("CONFLICT_DETECTED");
+            // 判斷時間區間是否有交集
+            if (newStart < existE && newEnd > existS) {
+                hasConflict = true;
             }
+        });
 
-            // 檢查安全無誤，寫入雲端
+        if (hasConflict) {
+            throw new Error("CONFLICT_DETECTED");
+        }
+
+        // 🔥 【修正步驟 3】：確認無衝突後，啟動 Transaction 純粹用來「安全寫入」
+        await runTransaction(db, async (transaction) => {
             const newDocRef = doc(collection(db, "schedule"));
+            
             transaction.set(newDocRef, {
                 leader: leader,
                 title: title,
