@@ -152,6 +152,7 @@ eventContent: function(arg) {
             document.getElementById('userInfo').innerText = `👋 歡迎，${user.displayName || '管理員'}`;
             document.getElementById('userInfo').style.display = 'inline';
             document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('printBtn').style.display = 'inline-block'; // ✨ 補上這一行：登入後顯示列印按鈕
             document.getElementById('cleanupBtn').style.display = 'inline-block';
             
             // 🔓 登入後：移除隱藏類別，秀出所有功能
@@ -166,6 +167,7 @@ eventContent: function(arg) {
             currentUserEmail = "";
             document.getElementById('userInfo').style.display = 'none';
             document.getElementById('loginBtn').style.display = 'inline-block';
+            document.getElementById('printBtn').style.display = 'inline-block'; // ✨ 補上這一行：登入後顯示列印按鈕
             document.getElementById('cleanupBtn').style.display = 'none';
             
             // 🔒 未登入時：加回隱藏類別
@@ -207,7 +209,13 @@ eventContent: function(arg) {
             }
         });
     }
-
+     //綁定「列印目前行程」按鈕
+    const printBtn = document.getElementById('printBtn');
+    if (printBtn) {
+        printBtn.addEventListener('click', () => {
+            window.print(); // 觸發瀏覽器原生的列印/另存 PDF 功能
+        });
+    }
     // B. 綁定「確認登錄行程」按鈕
     const addBtn = document.getElementById('addBtn');
     if (addBtn) {
@@ -294,7 +302,8 @@ async function loadData() {
 
             events.push({
                 id: d.id,
-                title: `👑 [${m.leader}] ${m.title}\n📍 地點：${m.room}\n🏢 科室：${m.dept} (${m.userName.split(' ')[0]})`,
+                // title: `👑 [${m.leader}] ${m.title}\n📍 地點：${m.room}\n🏢 科室：${m.dept} (${m.userName.split(' ')[0]})`,
+                title: m.title,
                 start: m.startTime,
                 end: m.endTime,
                 backgroundColor: eventColor,
