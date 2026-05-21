@@ -2,7 +2,7 @@
 // 1. 引入 Firebase SDK 模組
 // =======================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, runTransaction, doc, getDoc, query, where, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, runTransaction, doc, query, where, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // =======================================================
@@ -28,7 +28,6 @@ const provider = new GoogleAuthProvider();
 let calendar = null;
 let currentFilterLeader = "全部"; // 預設查看所有行程
 let currentUserEmail = "";
-let isSuperAdmin = false; // 預設不是超級管理員
 
 // 長官專屬識別顏色
 const leaderColors = {
@@ -141,9 +140,9 @@ document.addEventListener('DOMContentLoaded', function() {
     calendar.render();
     
     // =======================================================
-    // 5. 監聽 Firebase 登入狀態並控制元件顯示 (已修正嵌套語法錯誤)
+    // 5. 監聽 Firebase 登入狀態並控制元件顯示（順暢不卡死防線）
     // =======================================================
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, (user) => {
         const formSection = document.querySelector('.form-wrapper');
         const calendarSection = document.querySelector('.calendar-wrapper');
         const filterSection = document.querySelector('.leader-filter-container');
@@ -156,31 +155,13 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('printBtn').style.display = 'inline-block'; 
 
             // 🔓 登入後：移除隱藏類別，秀出所有功能
-            calendarSection.classList.remove('auth-hidden');
-            filterSection.classList.remove('auth-hidden');
-            formSection.classList.remove('auth-hidden'); 
+            if (calendarSection) calendarSection.classList.remove('auth-hidden');
+            if (filterSection) filterSection.classList.remove('auth-hidden');
+            if (formSection) formSection.classList.remove('auth-hidden'); 
 
-            // 👑 🛡️ 雲端動態查詢超級管理員權限
-            try {
-                const configDoc = await getDoc(doc(db, "system_config", "roles"));
-                
-                if (configDoc.exists()) {
-                    const adminEmail = configDoc.data().superAdmin;
-                    
-                    // ✨ 比對 Email，符合就將全域變數設為 true
-                    if (user.email === adminEmail) {
-                        isSuperAdmin = true; 
-                    } else {
-                        isSuperAdmin = false;
-                    }
-                }
-            } catch (error) {
-                console.error("權限查詢失敗:", error);
-                isSuperAdmin = false;
-            }
-
-            // 💡 遵循您的意思：不論是不是管理員，登入後前端一律先秀出清理按鈕！
-            document.getElementById('cleanupBtn').style.display = 'inline-block';
+            // 💡 完全不建表、不寫死 true/false 變數！登入後前端一律先大方秀出清理按鈕
+            const cleanupBtn = document.getElementById('cleanupBtn');
+            if (cleanupBtn) cleanupBtn.style.display = 'inline-block';
 
             // 載入資料與更新日曆尺寸
             loadData(); 
@@ -189,17 +170,18 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // 🔒 登出狀態：重設權限與隱藏所有元件
             currentUserEmail = "";
-            isSuperAdmin = false; 
             
             document.getElementById('userInfo').style.display = 'none';
             document.getElementById('loginBtn').style.display = 'inline-block';
             document.getElementById('printBtn').style.display = 'none'; 
             document.getElementById('cleanupBtn').style.display = 'none';
             
-            calendarSection.classList.add('auth-hidden');
-            filterSection.classList.add('auth-hidden');
-            formSection.classList.add('auth-hidden');
-            document.getElementById('eventModal').classList.add('auth-hidden'); 
+            if (calendarSection) calendarSection.classList.add('auth-hidden');
+            if (filterSection) filterSection.classList.add('auth-hidden');
+            if (formSection) formSection.classList.add('auth-hidden');
+            
+            const eventModal = document.getElementById('eventModal');
+            if (eventModal) eventModal.classList.add('auth-hidden'); 
             
             if (calendar) calendar.removeAllEvents();
         }
@@ -419,7 +401,7 @@ async function addMeeting() {
 
         alert(`🎉 成功登錄！已將行程排入【${leader}】行事曆。`);
         
-        // ✨ 已將欄位清空的 ID 修正為與上方一致的 'start' 與 'end'
+        // ✨ 已將欄位清空的 ID 修正為正確的 'start' 與 'end'
         document.getElementById('title').value = "";
         document.getElementById('room').value = "";
         document.getElementById('dept').value = "";
@@ -512,11 +494,8 @@ async function deleteMeeting() {
 // 🧹 自動清理舊資料（一鍵刪除一個月前的所有過期行程）
 // =======================================================
 async function autoCleanup() {
-    // 🛡️ 完美防線：一鍵按下時直接檢查全域變數，若不是管理員，立刻跳出提示並退回！
-    if (!isSuperAdmin) {
-        alert("❌ 權限不足：您並非系統最高管理員，無法執行全系統清理作業。");
-        return;
-    }
+    // 📢 點擊時直接做出前置警示提示
+    alert("⚠️ 系統提示：全系統清理作業將跨越權限限制。\n非最高管理員（或未配置後端安全性規則者），後端將會直接拒絕此刪除請求。");
 
     if (!confirm("⚠️ 確定要自動清理【一個月以前】的所有舊行程嗎？\n此操作將強制刪除過期資料且無法復原！")) return;
 
@@ -540,8 +519,6 @@ async function autoCleanup() {
 
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            
-            // 比對建立時間 (createdAt)，早於 30 天前者塞進刪除清單
             if (data.createdAt && data.createdAt < isoThreshold) {
                 batch.delete(docSnap.ref);
                 count++;
@@ -558,9 +535,9 @@ async function autoCleanup() {
         }
 
     } catch (error) {
-        // 後端 Rules 發揮資安防線作用時的二次攔截提示
+        // 🛡️ 當非管理者強行點擊，撞上您的 Firebase Rules 後端鎖時，跳出專業的權限封鎖提示
         if (error.code === 'permission-denied' || error.message.includes('permission')) {
-            alert("🔒 系統安全性拒絕：偵測到非授權的清理操作，後端已拒絕此請求。");
+            alert("🔒 系統安全性拒絕：您的 Google 帳號並非最高管理員，後端已拒絕您的全系統清理請求！");
         } else {
             alert("❌ 清理失敗：請確認網路連線或安全規則設定。");
         }
