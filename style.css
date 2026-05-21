@@ -128,33 +128,17 @@ body {
 }
 
 /* 直式微型卡片主體 */
+/* 🎴 日曆微型卡片主體 (15px 舒適放大版) */
 .fc-custom-card {
-    padding: 5px 8px;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    padding: 8px 10px; 
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
     color: #ffffff;
-    font-size: 13px;
-    line-height: 1.4;
+    font-size: 15px; /* ✨ 基礎字級改為 15px */
+    line-height: 1.5; /* 行高自動放大為 22.5px */
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    white-space: normal;
-    overflow: hidden;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* 🎴 日曆微型卡片主體 (嚴格三行直式) */
-.fc-custom-card {
-    padding: 6px 8px;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-    color: #ffffff;
-    font-size: 14px;
-    line-height: 1.4;
-    display: flex;
-    flex-direction: column; /* 強迫由上往下排 */
-    gap: 5px; /* 每一行之間的固定垂直間距 */
+    gap: 5px; 
     white-space: normal;
     overflow: hidden;
     width: 100%;
@@ -162,38 +146,33 @@ body {
 }
 
 /* 第一行：長官標籤 */
-.fc-card-leader-row {
-    display: flex;
-    align-items: center;
-}
+.fc-card-leader-row { display: flex; align-items: center; }
 .fc-card-badge {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.28);
     padding: 2px 6px;
     border-radius: 4px;
-    font-weight: bold;
-    font-weight: 900; /* ✨ 長官加粗 */
-    font-size: 13px;
+    font-weight: 900;
+    font-size: 14px;  /* ✨ 同步放大到 14px (原本13px) */
+    letter-spacing: 0.5px;
 }
-.fc-card-badge::before {
-    content: "👑 ";
-}
+.fc-card-badge::before { content: "👑 "; }
 
 /* 第二行：時間 */
 .fc-card-time-row {
-  font-size: 13px;   /* 從 11px 放大到 13px */
-  font-weight: 700;  /* ✨ 時間加粗，看得更清楚 */
-  opacity: 1;        /* 移除透明度，讓顏色最亮 */
-  letter-spacing: 0.3px;
+    font-size: 14px;   /* ✨ 同步放大到 14px (原本13px) */
+    font-weight: 700;
+    opacity: 1;
+    letter-spacing: 0.3px;
 }
 
 /* 第三行：地點 */
 .fc-card-room-row {
-    font-size: 14px;
+    font-size: 15px;   /* ✨ 同步放大到 15px (原本14px) */
     font-weight: 700;
     opacity: 1;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 1; /* 限制一行，避免文字太長破壞排版 */
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
