@@ -326,4 +326,7 @@ body {
         padding: 0 !important;
     }
 }
-
+.fc-custom-card, .fc-daygrid-event, .fc-v-event, .fc-daygrid-block-event {
+    display: flex !important;
+    visibility: visible !important;
+}
