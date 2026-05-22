@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // =======================================================
 function updateMinguoTitle(titleString) {
     const yearMatch = titleString.match(/(\d{4})年/);
-    let leaderText = currentFilterLeader === "全部" ? "（全部行程）" : `（【${currentFilterLeader}】公務行程表）`;
+    let leaderText = currentFilterLeader === "全部" ? "（全部行程）" : `（【${currentFilterLeader}】行程表）`;
     if (yearMatch) {
         const westernYear = parseInt(yearMatch[1]);
         const minguoYear = westernYear - 1911; 
