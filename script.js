@@ -200,8 +200,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 await setPersistence(auth, browserSessionPersistence);
                 await signInWithPopup(auth, provider);
                 console.log("Google 登入成功發起（會話模式）");
+                loginBtn.disabled = false;
             } catch (error) {
                 console.error("登入失敗：", error);
+                loginBtn.disabled = false;
                 if (error.code === 'auth/cancelled-popup-request') {
                     console.log('前一個登入視窗尚未關閉，已攔截重複請求。');
                 } else if (error.code === 'auth/popup-closed-by-user') {
