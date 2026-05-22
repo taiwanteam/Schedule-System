@@ -47,8 +47,10 @@ document.addEventListener('DOMContentLoaded', function() {
         initialView: 'dayGridMonth',
         locale: 'zh-tw',
         displayEventTime: true,
-        navLinks: false,        
-        
+        navLinks: false,   
+        //二天補滿
+        eventDisplay: 'block',         
+        nextDayThreshold: '00:00:00',
         // 24小時制核心設定：強迫顯示 24hr 格式
         eventTimeFormat: { 
             hour: '2-digit', 
@@ -135,7 +137,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // 移除隱藏類別，秀出視窗
             document.getElementById('eventModal').classList.remove('auth-hidden');
         }
-        // ===== 鎖定鍵盤防呆邏輯 =====
+    });
+    calendar.render();
+            // ===== 鎖定鍵盤防呆邏輯 =====
         const dateInputs = document.querySelectorAll('.date-picker-clean');
 
         dateInputs.forEach(input => {
@@ -151,8 +155,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-    });
-    calendar.render();
     
     // =======================================================
     // 5. 監聽 Firebase 登入狀態並控制元件顯示
