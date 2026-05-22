@@ -145,26 +145,49 @@ body {
 .fc .fc-button-primary:disabled { background-color: #a0aec0 !important; opacity: 0.6; }
 
 /* =======================================================
-   🎴 核心優化：跨天長條圖強行上色與結構修正
+   🎨 跨天長條圖外殼：依不同長官動態精準上色
    ======================================================= */
-/* 1. 調整 FullCalendar 預設事件框的外邊距 */
+
+/* 先清除預設邊框與內距 */
 .fc-v-event, .fc-daygrid-event, .fc-daygrid-block-event {
     border: none !important;
     padding: 0 !important;
     margin: 2px 4px !important;
 }
 
-/* 🌟 2. 強迫 FullCalendar 橫向長條圖外殼（單天與跨天後）都吃 JS 塞進來的顏色 */
-.fc-daygrid-block-event,
-.fc-daygrid-block-event .fc-event-main,
-.fc-daygrid-event,
-.fc-event {
-    background-color: var(--fc-event-bg-color) !important; /* 自動抓取 JS 的 backgroundColor */
-    border-color: var(--fc-event-border-color) !important;
-    background: var(--fc-event-bg-color) !important;       /* 雙重防漏白 */
+/* 👑 1. 局長行程：不論單天或跨天，外殼一律強行染【紅色】 */
+.fc-event-leader-局長,
+.fc-event-leader-局長 .fc-event-main {
+    background-color: #e53e3e !important;
+    background: #e53e3e !important;
+    border-color: #e53e3e !important;
 }
 
-/* 🌟 3. 解除 FullCalendar 內建的縮放擠壓，強迫容器 100% 水平橫向展開，防文字掉下去 */
+/* 👑 2. 副局長行程：不論單天或跨天，外殼一律強行染【藍色】 */
+.fc-event-leader-副局長,
+.fc-event-leader-副局長 .fc-event-main {
+    background-color: #3182ce !important;
+    background: #3182ce !important;
+    border-color: #3182ce !important;
+}
+
+/* 👑 3. 秘書行程：不論單天或跨天，外殼一律強行染【綠色】 */
+.fc-event-leader-秘書,
+.fc-event-leader-秘書 .fc-event-main {
+    background-color: #38a169 !important;
+    background: #38a169 !important;
+    border-color: #38a169 !important;
+}
+
+/* 👑 4. 預設/其他行程： */
+.fc-event-leader-預設,
+.fc-event-leader-預設 .fc-event-main {
+    background-color: #4a5568 !important;
+    background: #4a5568 !important;
+    border-color: #4a5568 !important;
+}
+
+/* 🌟 3. 解除 FullCalendar 內建的縮放擠壓，強迫容器 100% 水平橫向展開 */
 .fc-daygrid-event-holder,
 .fc-event-main,
 .fc-events-container,
