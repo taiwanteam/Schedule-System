@@ -366,7 +366,11 @@ body {
     .fc-today-button {
         display: none !important;
     }
-
+   /* 2. 強制標頭與篩選列在列印時顯示 */
+    .system-header, 
+    .leader-filter-container {
+        display: block !important; 
+    }
   
     /* 保持標頭與日曆主體寬度填滿紙張 */
     .system-header {
