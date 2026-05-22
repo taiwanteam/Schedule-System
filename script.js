@@ -493,11 +493,15 @@ async function deleteMeeting() {
 // =======================================================
 // 🧹 自動清理舊資料（一鍵刪除一個月前的所有過期行程）
 // =======================================================
+// =======================================================
+// 🧹 自動清理舊資料（一鍵刪除一個月前的所有過期行程）
+// =======================================================
 async function autoCleanup() {
     // 📢 點擊時的前置警示提示
     alert("⚠️ 系統提示：全系統清理作業將跨越權限限制。\n非最高管理員（或未配置後端安全性規則者），後端將會直接拒絕此刪除請求。");
 
-    if (!confirm("⚠️ 確定要自動清理【一個月以前】的所有舊行程嗎？\n此操作將強制刪除過期資料且無法復原！")) return;
+    // 💡 為了測試，提示訊息微調
+    if (!confirm("⚠️ 確定要自動清理【行事曆上一個月以前】的所有舊行程嗎？\n（此版本將以行程本身的『開始時間』作為過期依據！）")) return;
 
     const cleanupBtn = document.getElementById('cleanupBtn');
     cleanupBtn.disabled = true;
@@ -507,7 +511,9 @@ async function autoCleanup() {
         // 📅 計算 30 天前的時間切點
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const isoThreshold = thirtyDaysAgo.toISOString();
+        
+        // 🛠️ 測試小技巧：如果您想連今天建的這筆 4/1 行程一起清掉，可以把上面兩行註解，改用下面這行：
+        // const thirtyDaysAgo = new Date(); // 這代表「只要行程在今天以前」全部都清掉！
 
         // 🔍 步驟 1：獲取所有行程
         const scheduleCollRef = collection(db, "schedule");
@@ -516,11 +522,10 @@ async function autoCleanup() {
         try {
             snapshot = await getDocs(scheduleCollRef);
         } catch (readError) {
-            // 🔒 如果在「讀取階段」就被擋，代表沒有查看全表權限，直接判定非管理員
             if (readError.code === 'permission-denied') {
                 throw new Error("READ_PERMISSION_DENIED");
             }
-            throw readError; // 其他網路異常直接往外拋
+            throw readError;
         }
         
         // 📦 步驟 2：初始化批次操作 (Batch)
@@ -529,26 +534,31 @@ async function autoCleanup() {
 
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            // 💡 加上防呆：確保 createdAt 欄位存在且過期
-            if (data.createdAt && data.createdAt < isoThreshold) {
-                batch.delete(docSnap.ref);
-                count++;
+            
+            // 💡 「行程哪一天發生(startTime)」！
+            if (data.startTime) {
+                const meetingStartDate = new Date(data.startTime); 
+                
+                // 如果行程的發生時間，早於我們設定的切點（30天前），就打包刪除
+                if (meetingStartDate < thirtyDaysAgo) {
+                    batch.delete(docSnap.ref);
+                    count++;
+                }
             }
         });
 
-        // 💡 最佳化防呆：如果算出來根本沒舊資料，優雅提示並直接中斷，不浪費雲端連線
+        // 💡 最佳化防呆：如果算出來根本沒舊資料
         if (count === 0) {
-            alert("✨ 檢查完畢！目前資料庫中沒有一個月前的舊資料，無需清理。");
+            alert("✨ 檢查完畢！目前行事曆中沒有一個月前的舊行程，無需清理。");
             return; 
         }
 
-        // 🚀 步驟 3：送出批次提交（真正考驗最高管理員刪除權限的重頭戲）
+        // 🚀 步驟 3：送出批次提交
         try {
             await batch.commit();
             alert(`🧹 清理成功！已自動刪除 ${count} 筆一個月前的歷程行程。`);
             loadData(); 
         } catch (writeError) {
-            // 🔒 如果這裏被擋，代表能看不能刪
             if (writeError.code === 'permission-denied') {
                 throw new Error("WRITE_PERMISSION_DENIED");
             }
@@ -556,7 +566,6 @@ async function autoCleanup() {
         }
 
     } catch (error) {
-        // 🛡️ 根據不同階段的封鎖，彈出精準的專業提示
         if (error.message === "READ_PERMISSION_DENIED") {
             alert("🔒 安全性拒絕 (Read)：您的帳號無權讀取全系統原始資料，拒絕清理請求。");
         } else if (error.message === "WRITE_PERMISSION_DENIED") {
