@@ -145,36 +145,47 @@ body {
 .fc .fc-button-primary:disabled { background-color: #a0aec0 !important; opacity: 0.6; }
 
 /* =======================================================
-   🎴 核心優化：極簡直式卡片排版（只留時間、誰、地點）
+   🎴 核心優化：跨天長條圖強行上色與結構修正
    ======================================================= */
-/* 覆蓋 FullCalendar 預設的外框超連結，使其改為完全透明以容納自訂卡片 */
+/* 1. 調整 FullCalendar 預設事件框的外邊距 */
 .fc-v-event, .fc-daygrid-event, .fc-daygrid-block-event {
-    background: transparent !important;
     border: none !important;
     padding: 0 !important;
     margin: 2px 4px !important;
 }
 
-.fc-daygrid-event, 
-.fc-daygrid-block-event, 
-.fc-event,
-.fc-event-main {
-    background-color: inherit !important; /* 繼承 JavaScript 指定的主管顏色 */
-    border-color: inherit !important;     /* 邊框同步繼承 */
+/* 🌟 2. 強迫 FullCalendar 橫向長條圖外殼（單天與跨天後）都吃 JS 塞進來的顏色 */
+.fc-daygrid-block-event,
+.fc-daygrid-block-event .fc-event-main,
+.fc-daygrid-event,
+.fc-event {
+    background-color: var(--fc-event-bg-color) !important; /* 自動抓取 JS 的 backgroundColor */
+    border-color: var(--fc-event-border-color) !important;
+    background: var(--fc-event-bg-color) !important;       /* 雙重防漏白 */
 }
 
-/* 直式微型卡片主體 */
+/* 🌟 3. 解除 FullCalendar 內建的縮放擠壓，強迫容器 100% 水平橫向展開，防文字掉下去 */
+.fc-daygrid-event-holder,
+.fc-event-main,
+.fc-events-container,
+.fc-daygrid-event-body {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 100% !important;
+}
+
 /* 🎴 日曆微型卡片主體 (15px 舒適放大版) */
 .fc-custom-card {
-   background-color: inherit !important; /* 🌟 改為 inherit，讓它跟外殼色彩融為一體 */
+    /* 🌟 4. 卡片主體改為透明，直接顯露出外殼被我們染好的長官顏色 */
+    background-color: transparent !important; 
     padding: 8px 10px; 
     border-radius: 6px;
-    /* 取消自訂陰影，改讓外殼繼承，跨天長條才不會斷成兩截 */
     color: #ffffff;
     font-size: 15px; 
     line-height: 1.5; 
-    display: flex;
-    flex-direction: column;
+    display: flex !important; /* 內部維持直式彈性排版 */
+    flex-direction: column !important;
     gap: 5px; 
     white-space: normal;
     overflow: hidden;
@@ -183,35 +194,40 @@ body {
 }
 
 /* 第一行：長官標籤 */
-.fc-card-leader-row { display: flex; align-items: center; }
+.fc-card-leader-row { 
+    display: flex !important; 
+    align-items: center !important; 
+}
 .fc-card-badge {
-    background: rgba(255, 255, 255, 0.28);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 900;
-    font-size: 14px;  /* ✨ 同步放大到 14px (原本13px) */
-    letter-spacing: 0.5px;
+    background: rgba(255, 255, 255, 0.25) !important; /* 半透明白底襯托文字 */
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-weight: 900 !important;
+    font-size: 14px !important;  
+    letter-spacing: 0.5px !important;
+    display: inline-block !important;
 }
 .fc-card-badge::before { content: "👑 "; }
 
 /* 第二行：時間 */
 .fc-card-time-row {
-    font-size: 14px;   /* ✨ 同步放大到 14px (原本13px) */
-    font-weight: 700;
-    opacity: 1;
-    letter-spacing: 0.3px;
+    font-size: 14px !important;   
+    font-weight: 700 !important;
+    opacity: 1 !important;
+    letter-spacing: 0.3px !important;
+    display: block !important;
 }
 
 /* 第三行：地點 */
 .fc-card-room-row {
-    font-size: 15px;   /* ✨ 同步放大到 15px (原本14px) */
-    font-weight: 700;
-    opacity: 1;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 15px !important;   
+    font-weight: 700 !important;
+    opacity: 1 !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 1 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
 }
 
 /* 2. 週/日檢視：24小時縱向時間軸防擠壓變形 */
