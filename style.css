@@ -359,9 +359,13 @@ body {
     .form-wrapper, 
     .modal-overlay,
     .fc-toolbar-chunk button,
-    .fc-header-toolbar button {
+    .fc-header-toolbar button,
+    .fc-today-button,
+    .fc-button-group {
         display: none !important;
     }
+
+   
     /* 保持標頭與日曆主體寬度填滿紙張 */
     .system-header {
         box-shadow: none !important;
