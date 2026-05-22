@@ -155,15 +155,24 @@ body {
     margin: 2px 4px !important;
 }
 
+.fc-daygrid-event, 
+.fc-daygrid-block-event, 
+.fc-event,
+.fc-event-main {
+    background-color: inherit !important; /* 繼承 JavaScript 指定的主管顏色 */
+    border-color: inherit !important;     /* 邊框同步繼承 */
+}
+
 /* 直式微型卡片主體 */
 /* 🎴 日曆微型卡片主體 (15px 舒適放大版) */
 .fc-custom-card {
+   background-color: inherit !important; /* 🌟 改為 inherit，讓它跟外殼色彩融為一體 */
     padding: 8px 10px; 
     border-radius: 6px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    /* 取消自訂陰影，改讓外殼繼承，跨天長條才不會斷成兩截 */
     color: #ffffff;
-    font-size: 15px; /* ✨ 基礎字級改為 15px */
-    line-height: 1.5; /* 行高自動放大為 22.5px */
+    font-size: 15px; 
+    line-height: 1.5; 
     display: flex;
     flex-direction: column;
     gap: 5px; 
