@@ -135,8 +135,23 @@ document.addEventListener('DOMContentLoaded', function() {
             // 移除隱藏類別，秀出視窗
             document.getElementById('eventModal').classList.remove('auth-hidden');
         }
-    });
+        // ===== 鎖定鍵盤防呆邏輯 =====
+        const dateInputs = document.querySelectorAll('.date-picker-clean');
 
+        dateInputs.forEach(input => {
+            input.setAttribute('inputmode', 'none');
+
+            input.addEventListener('keydown', (e) => {
+                e.preventDefault(); 
+            });
+
+            input.addEventListener('click', function() {
+                if (typeof this.showPicker === 'function') {
+                    this.showPicker();
+                }
+            });
+        });
+    });
     calendar.render();
     
     // =======================================================
