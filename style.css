@@ -129,6 +129,18 @@ body {
     background-color: #4a5568 !important;
     border: none !important;
 }
+/* 💡 只針對左邊箭頭推開間距，並補回右邊圓角 */
+.fc .fc-button-group .fc-prev-button {
+    margin-right: 8px !important;            /* 👈 往右推開 8px 間距 */
+    border-top-right-radius: 6px !important;  /* 補回原本被削平的右側圓角 */
+    border-bottom-right-radius: 6px !important;
+}
+
+/* 💡 只針對右邊箭頭補回左邊圓角 */
+.fc .fc-button-group .fc-next-button {
+    border-top-left-radius: 6px !important;   /* 補回原本被削平的左側圓角 */
+    border-bottom-left-radius: 6px !important;
+}
 .fc .fc-button:hover { background-color: #2d3748 !important; }
 .fc .fc-button-primary:disabled { background-color: #a0aec0 !important; opacity: 0.6; }
 
