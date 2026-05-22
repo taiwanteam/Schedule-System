@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
     calendar.render();
     
     // =======================================================
-    // 5. 監聽 Firebase 登入狀態並控制元件顯示（順暢不卡死防線）
+    // 5. 監聽 Firebase 登入狀態並控制元件顯示
     // =======================================================
     onAuthStateChanged(auth, (user) => {
         const formSection = document.querySelector('.form-wrapper');
@@ -154,12 +154,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('loginBtn').style.display = 'none';
             document.getElementById('printBtn').style.display = 'inline-block'; 
 
-            // 🔓 登入後：移除隱藏類別，秀出所有功能
+            // 登入後：移除隱藏類別，秀出所有功能
             if (calendarSection) calendarSection.classList.remove('auth-hidden');
             if (filterSection) filterSection.classList.remove('auth-hidden');
             if (formSection) formSection.classList.remove('auth-hidden'); 
 
-            // 💡 完全不建表、不寫死 true/false 變數！登入後前端一律先大方秀出清理按鈕
+            // 秀出清理按鈕
             const cleanupBtn = document.getElementById('cleanupBtn');
             if (cleanupBtn) cleanupBtn.style.display = 'inline-block';
 
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => { if (calendar) calendar.updateSize(); }, 100);
             
         } else {
-            // 🔒 登出狀態：重設權限與隱藏所有元件
+            //  登出狀態：重設權限與隱藏所有元件
             currentUserEmail = "";
             
             document.getElementById('userInfo').style.display = 'none';
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 綁定「列印目前行程」按鈕
+    // A.綁定「列印目前行程」按鈕
     const printBtn = document.getElementById('printBtn');
     if (printBtn) {
         printBtn.addEventListener('click', () => {
@@ -490,9 +490,6 @@ async function deleteMeeting() {
     }
 }
 
-// =======================================================
-// 🧹 自動清理舊資料（一鍵刪除一個月前的所有過期行程）
-// =======================================================
 // =======================================================
 // 🧹 自動清理舊資料（一鍵刪除一個月前的所有過期行程）
 // =======================================================
