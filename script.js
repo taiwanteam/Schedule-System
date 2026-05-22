@@ -335,6 +335,8 @@ async function loadData() {
                 end: m.endTime,
                 backgroundColor: eventColor,
                 borderColor: eventColor,
+             // 強迫外殼帶上分類類別，讓 CSS 可以精準抓到是哪位長官！
+                className: 'fc-event-leader-' + m.leader,
                 extendedProps: {
                     leader: m.leader,
                     originTitle: m.title,
