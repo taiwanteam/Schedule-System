@@ -130,7 +130,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 fields.forEach(id => document.getElementById(id).disabled = true);
                 document.getElementById('saveBtn').style.display = 'none';
                 document.getElementById('deleteBtn').style.display = 'none';
-                document.getElementById('ownerNotice').innerText = `🔒 唯讀模式：此行程由 ${props.userEmail || '其他管理員'} 建立。`;
+                // document.getElementById('ownerNotice').innerText = `🔒 唯讀模式：此行程由 ${props.userEmail || '其他管理員'} 建立。`;
+                document.getElementById('ownerNotice').innerText = `🔒 唯讀模式：此行程由其他管理者建立。`;
                 document.getElementById('ownerNotice').style.color = "#c53030";
             }
 
