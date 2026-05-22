@@ -266,13 +266,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // =======================================================
 function updateMinguoTitle(titleString) {
     const yearMatch = titleString.match(/(\d{4})年/);
+    let leaderText = currentFilterLeader === "全部" ? "（全部行程）" : `（【${currentFilterLeader}】公務行程表）`;
     if (yearMatch) {
         const westernYear = parseInt(yearMatch[1]);
         const minguoYear = westernYear - 1911; 
         const restOfTitle = titleString.replace(`${westernYear}年`, '');
-        document.getElementById('minguoDisplay').innerText = `💡 目前檢視：民國 ${minguoYear} 年 (${westernYear}年${restOfTitle})`;
+        document.getElementById('minguoDisplay').innerText = `💡 民國 ${minguoYear} 年 (${westernYear}年${restOfTitle}) ${leaderText}`;
     } else {
-        document.getElementById('minguoDisplay').innerText = titleString;
+        document.getElementById('minguoDisplay').innerText = `${titleString} ${leaderText}`;
     }
 }
 
@@ -281,7 +282,9 @@ function updateMinguoTitle(titleString) {
 // =======================================================
 function filterLeader(leaderName) {
     currentFilterLeader = leaderName;
-    
+    if (calendar) {
+        updateMinguoTitle(calendar.view.title);
+    }
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.leader === leaderName) btn.classList.add('active');
